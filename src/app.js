@@ -10,7 +10,7 @@ app.get('/', (req, res) => {
 
 import userRouter from "./routers/user.routes.js";
 
-app.use("/api/v1/users", userRouter);
+app.use("/api/v1/user", userRouter);
 
 
 export default app;

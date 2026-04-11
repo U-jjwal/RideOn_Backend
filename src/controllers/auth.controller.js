@@ -1,13 +1,13 @@
-import { User } from "../models/user.model";
+import { User } from "../models/user.model.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
-export const register = async (req, res) => {
+export const registerUser = async (req, res) => {
     try {
 
-        const { firstname, lastname, email, passsword } = req.body
+        const { firstname, lastname, email, password } = req.body
 
-        if(!firstname || !lastname || !email || !passsword) {
+        if(!firstname || !lastname || !email || !password) {
             return res.status(400).json({ message: "All fields are required" })
         }
 
@@ -17,7 +17,7 @@ export const register = async (req, res) => {
         if(existingUser) return res.status(400).json({ message: "User already exists" })
         
         //hash password
-        const hashPassword = await bcrypt.hash(passsword, 10)
+        const hashPassword = await bcrypt.hash(password, 10)
         
         // create user
         const user = await User.create({
