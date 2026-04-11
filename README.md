@@ -1,4 +1,4 @@
-# RideOn — Backend (Uber-like Clone)
+# RideOn — Backend 
 
 Professional backend for the RideOn project. This repository contains a minimal, production-oriented Node.js / Express API for user authentication and profile handling, built with modern JavaScript (ES modules) and MongoDB.
 
