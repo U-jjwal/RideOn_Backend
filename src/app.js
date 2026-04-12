@@ -11,8 +11,9 @@ app.get('/', (req, res) => {
 });
 
 import userRouter from "./routers/user.routes.js";
+import captainRouter from "./routers/captain.routes.js";
 
 app.use("/api/v1/user", userRouter);
-
+app.use("/api/v1/captain", captainRouter)
 
 export default app;
