@@ -1,4 +1,4 @@
-# 🚖 RideConnect Backend API
+# 🚖 RideOn Backend API
 
 A scalable and secure backend API for a ride-booking platform, built with **Node.js, Express.js, MongoDB, and JWT Authentication**.  
 This project supports two main roles:
@@ -12,7 +12,7 @@ Designed with modular architecture for easy scaling into a complete Uber/Ola-sty
 
 # 📌 Project Overview
 
-RideConnect Backend provides authentication and profile management APIs for:
+RideOn Backend provides authentication and profile management APIs for:
 
 ### 👤 Users
 - Register account
@@ -31,7 +31,7 @@ RideConnect Backend provides authentication and profile management APIs for:
 # 🏗️ Project Architecture
 
 ```bash
-RideConnect-Backend/
+RideOn-Backend/
 │
 ├── src/
 │   ├── controllers/
@@ -241,12 +241,12 @@ App setup defined in:
 Create .env file:
 
 PORT=5000
-MONGO_URI=mongodb://localhost:27017/rideconnect
+MONGO_URI=mongodb://localhost:27017/RideOn
 JWT_SECRET=your_secret_key
 📦 Installation Guide
 1 Clone Repository
-git clone https://github.com/yourusername/rideconnect-backend.git
-cd rideconnect-backend
+git clone https://github.com/yourusername/RideOn-backend.git
+cd RideOn-backend
 2 Install Dependencies
 npm install
 3 Configure Environment
