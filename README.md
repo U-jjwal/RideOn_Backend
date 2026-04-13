@@ -1,200 +1,301 @@
-# RideOn — Backend 
+# 🚖 RideConnect Backend API
 
-Professional backend for the RideOn project. This repository contains a minimal, production-oriented Node.js / Express API for user authentication and profile handling, built with modern JavaScript (ES modules) and MongoDB.
+A scalable and secure backend API for a ride-booking platform, built with **Node.js, Express.js, MongoDB, and JWT Authentication**.  
+This project supports two main roles:
 
----
+- **Users (Passengers)** – Register, login, manage profile
+- **Captains (Drivers)** – Register with vehicle details, login, manage profile
 
-## Table of contents
-
-- Project overview
-- Features
-- Tech stack
-- Project structure
-- Getting started
-	- Prerequisites
-	- Environment variables
-	- Install & run
-- API reference (auth)
-	- Register
-	- Login
-	- Logout
-	- Profile
-- Authentication details
-- Development notes & tips
-- Troubleshooting
-- Next steps / roadmap
-- Contributing
-- License
+Designed with modular architecture for easy scaling into a complete Uber/Ola-style ride-sharing system.
 
 ---
 
-## Project overview
+# 📌 Project Overview
 
-This backend provides authentication and a basic user profile for the RideOn application. It supports:
+RideConnect Backend provides authentication and profile management APIs for:
 
-- User registration with hashed passwords
-- Login using email & password
-- JWT-based authentication stored in an HTTP-only cookie
-- Protected profile endpoint
+### 👤 Users
+- Register account
+- Login securely
+- Logout
+- View profile
 
-The code aims to be simple and extensible: add ride matching, sockets, geolocation, payments, and more.
+### 🚘 Captains
+- Register with vehicle info
+- Login securely
+- Logout
+- View captain profile
 
-## Features
+---
 
-- Register new users with validation and password hashing (bcrypt).
-- Log in and receive a signed JWT (cookie-based session).
-- Middleware to protect routes and load the authenticated user.
-- Mongoose models with sensible defaults and selected fields.
-
-## Tech stack
-
-- Node.js (ES modules)
-- Express
-- MongoDB + Mongoose
-- bcrypt for password hashing
-- jsonwebtoken for JWT
-- cookie-parser for cookie handling
-
-## Project structure
-
-Key files and folders:
-
-- `server.js` — app entrypoint; loads env and connects to DB.
-- `src/app.js` — configures express, parses cookies and JSON, and registers routers.
-- `src/db/db.js` — (database connection helper).
-- `src/controllers/auth.controller.js` — register, login, logout, profile handlers.
-- `src/middleware/auth.middleware.js` — authenticates requests using JWT from cookie.
-- `src/models/user.model.js` — Mongoose schema for users.
-- `src/routers/user.routes.js` — user auth routes.
-
-## Getting started
-
-### Prerequisites
-
-- Node.js 16+ (or active LTS)
-- npm (or yarn)
-- MongoDB instance (local or hosted: Atlas)
-
-### Environment variables
-
-Create a `.env` file at the project root with the following minimum variables:
-
-```
-PORT=3000
-MONGODB_URI=mongodb://localhost:27017/rideon
-JWT_SECRET=your-strong-secret
-```
-
-Replace values with production-secure settings. Never commit secrets to source control.
-
-### Install & run (development)
-
-1. Install dependencies:
+# 🏗️ Project Architecture
 
 ```bash
-npm install
-```
+RideConnect-Backend/
+│
+├── src/
+│   ├── controllers/
+│   │   ├── auth.controller.js
+│   │   └── captain.controller.js
+│   │
+│   ├── middleware/
+│   │   └── auth.middleware.js
+│   │
+│   ├── models/
+│   │   ├── user.model.js
+│   │   └── captain.model.js
+│   │
+│   ├── routers/
+│   │   ├── user.routes.js
+│   │   └── captain.routes.js
+│   │
+│   ├── db/
+│   │   └── db.js
+│   │
+│   └── app.js
+│
+├── server.js
+├── .env
+├── package.json
+└── README.md
+⚙️ Tech Stack
+Technology	Purpose
+Node.js	Runtime environment
+Express.js	Web framework
+MongoDB	Database
+Mongoose	ODM
+JWT	Authentication
+bcrypt	Password hashing
+cookie-parser	Cookie management
+dotenv	Environment config
+🔐 Authentication System
 
-2. Start the server (example, using NODE):
+Authentication is implemented using:
 
-```bash
-# development (use nodemon if available)
-node server.js
-```
+JWT Token Based Login
+JWT token generated on successful login/register
+Token stored in HTTP cookies
+Password Security
 
-If you use `nodemon`, run `nodemon server.js` for auto-reload.
+Passwords are encrypted using bcrypt before storage.
 
-## API reference (base path: `/api/v1/user`)
+Example from auth flow:
+Passwords are hashed before saving users and captains into MongoDB.
 
-All endpoints return JSON and use standard HTTP status codes.
+🧩 Core Modules Explanation
+1. User Module
+Features:
 
-### POST /register
+✅ Register User
+✅ Login User
+✅ Logout User
+✅ Get User Profile
 
-- Description: Create a new user
-- Request body (application/json):
+API Routes:
+Method	Endpoint	Description
+POST	/api/v1/user/register	Register new user
+POST	/api/v1/user/login	Login user
+POST	/api/v1/user/logout	Logout user
+GET	/api/v1/user/profile	Get user profile
 
-```json
+Defined in routing layer here:
+
+2. Captain Module
+Features:
+
+✅ Register Captain
+✅ Login Captain
+✅ Logout Captain
+✅ Get Captain Profile
+
+API Routes:
+Method	Endpoint	Description
+POST	/api/v1/captain/register	Register captain
+POST	/api/v1/captain/login	Login captain
+POST	/api/v1/captain/logout	Logout captain
+GET	/api/v1/captain/profile	Get captain profile
+
+Defined here:
+
+🗄️ Database Models
+User Schema
+
+Includes:
+
+firstname
+lastname
+email
+password
+socketId
+
+User schema structure defined in:
+
+Captain Schema
+
+Includes:
+
+firstname
+lastname
+email
+password
+vehicle info:
+color
+plate
+capacity
+vehicleType
+status
+live location
+
+Captain schema defined in:
+
+🚘 Vehicle System
+
+Each captain must provide:
+
 {
-	"firstname": "John",
-	"lastname": "Doe",
-	"email": "john@example.com",
-	"password": "s3cret"
+  "color": "White",
+  "plate": "MP04AB1234",
+  "capacity": 4,
+  "vehicleType": "car"
 }
-```
 
-- Success (201):
+Supported vehicle types:
 
-```json
-{ "message": "User registered successfully" }
-```
+car
+motorcycle
+auto
+🛡️ Middleware Protection
 
-- Notes: Passwords are hashed using bcrypt. On success a JWT cookie named `token` is set.
+Protected routes use authentication middleware:
 
-### POST /login
+User Middleware:
+Verifies JWT token
+Fetches authenticated user
+Captain Middleware:
+Verifies JWT token
+Checks captain role
 
-- Description: Authenticate user and set JWT cookie
-- Request body:
+Implemented in:
 
-```json
-{ "email": "john@example.com", "password": "s3cret" }
-```
+🌐 API Flow Example
+User Registration Flow
+Client Request
+   ↓
+Route Handler
+   ↓
+Controller Validation
+   ↓
+Hash Password
+   ↓
+Save User to DB
+   ↓
+Generate JWT
+   ↓
+Send Cookie + Response
+Captain Login Flow
+Captain Login Request
+   ↓
+Validate Credentials
+   ↓
+Compare Password Hash
+   ↓
+Generate JWT Token
+   ↓
+Store Cookie
+   ↓
+Return Success Response
 
-- Success (200):
+Captain login logic handled in:
 
-```json
-{ "message": "User logged in successfully" }
-```
+🔌 Database Connection
 
-- Notes: The server returns a cookie `token` containing the signed JWT. The user document's password field is not returned (it uses `select: false`).
+MongoDB connection uses mongoose:
 
-### POST /logout
+mongoose.connect(process.env.MONGO_URI)
 
-- Protected endpoint (requires cookie token). Clears the `token` cookie.
-- Success (200):
+Database connector file:
 
-```json
-{ "message": "User logged out successfully" }
-```
+🚀 Server Startup
 
-### GET /profile
+Application boot sequence:
 
-- Protected endpoint. Returns the authenticated user's document.
-- Success (200):
+Load environment variables
+Connect MongoDB
+Start Express server
 
-```json
-{ "_id": "...", "fullname": { "firstname": "John", "lastname": "Doe" }, "email": "john@example.com", "createdAt": "..." }
-```
+Server bootstrap file:
 
-## Authentication details
+🌍 Main Application Entry
 
-- JWTs are signed with `process.env.JWT_SECRET` and stored in a cookie named `token`.
-- The `authMiddleware` checks `req.cookies.token`, verifies the JWT, fetches the user with `User.findById()` and attaches `req.user`.
-- If no token or an invalid token is provided, routes return HTTP 401 Unauthorized.
+Express app configuration includes:
 
-Security recommendations:
+JSON parser
+URL encoded parser
+Cookie parser
+Route mounting
 
-- Use `httpOnly`, `secure`, and `sameSite` attributes for the cookie in production.
-- Store JWT_SECRET in a secure secret manager.
-- Optionally add token expiration (recommended) and refresh tokens for long sessions.
+App setup defined in:
 
-## Development notes & tips
+🔑 Environment Variables
 
-- The user password is stored hashed and is excluded by default from queries (`select: false`). When login needs to compare password, the controller uses `.select('+password')`.
-- Add input validation (e.g., `express-validator` or Joi) for stricter field checks.
-- Consider enabling CORS with a controlled origin in `app.js` if the frontend is served from another host.
+Create .env file:
 
-## Troubleshooting
+PORT=5000
+MONGO_URI=mongodb://localhost:27017/rideconnect
+JWT_SECRET=your_secret_key
+📦 Installation Guide
+1 Clone Repository
+git clone https://github.com/yourusername/rideconnect-backend.git
+cd rideconnect-backend
+2 Install Dependencies
+npm install
+3 Configure Environment
 
-- Mongo connection issues: confirm `MONGODB_URI` and that MongoDB is running.
-- JWT verification errors: ensure `JWT_SECRET` is identical between sign and verify and not empty.
-- Cookie not set in client: check `SameSite` and `Secure` attributes; when testing on localhost, `secure` should be `false`.
+Create .env
 
-## Next steps / roadmap
+4 Start Server
+npm run dev
+🧪 Sample API Testing
+Register User
+POST /api/v1/user/register
+{
+  "firstname": "John",
+  "lastname": "Doe",
+  "email": "john@example.com",
+  "password": "123456"
+}
+Register Captain
+POST /api/v1/captain/register
+{
+  "firstname": "Mike",
+  "lastname": "Smith",
+  "email": "mike@example.com",
+  "password": "123456",
+  "vehicle": {
+    "color": "Black",
+    "plate": "MP09XY4567",
+    "capacity": 4,
+    "vehicleType": "car"
+  }
+}
+🔮 Future Enhancements
+Planned Features:
+Ride booking system
+Real-time captain tracking
+Socket.IO live communication
+Fare estimation engine
+Payment gateway integration
+Trip history
+OTP verification
+Admin dashboard
+📈 Scalability Design
 
-- Add validation and typed request/response shapes (TypeScript or JSDoc)
-- Implement refresh tokens and token expiration
-- Add email verification and password reset
-- Integrate socket.io for real-time ride updates
-- Add rides, drivers, and location tracking models
-- Add unit & integration tests (Jest + supertest)
+This backend is built modularly for future expansion:
 
+Easy microservice migration
+Real-time websocket integration ready
+Scalable route separation
+Role-based authentication ready
+👨‍💻 Author
+
+Developed as a scalable ride-booking backend architecture project.
