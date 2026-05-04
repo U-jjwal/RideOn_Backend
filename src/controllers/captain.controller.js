@@ -6,6 +6,7 @@ export const registerCaptain = async (req, res) => {
     try {
         const {firstname, lastname, email, password, vehicle } = req.body 
         
+        
 
         if(!firstname || !lastname || !email || !password || !vehicle) return res.status(400).json({ message: "All fields are required"})
 
@@ -37,9 +38,10 @@ export const registerCaptain = async (req, res) => {
         }, process.env.JWT_SECRET)
 
         res.cookie("token", token)
-
         res.status(201).json({
-            message: "Captain registered successfully"
+            message: "Captain registered successfully",
+            user: captain,
+            token
         })
         
     } catch (err) {
@@ -52,7 +54,6 @@ export const registerCaptain = async (req, res) => {
 
 export const loginCaptain = async (req, res) => {
     try {
-
         const { email, password } = req.body
 
         if(!email || !password) return res.status(400).json({ message: "Email and password are required" })
@@ -74,10 +75,13 @@ export const loginCaptain = async (req, res) => {
         res.cookie("token", token)
 
         res.status(200).json({
-            message: "Captain logged in successfully"
+            message: "Captain logged in successfully",
+            user : captain,
+            token       
         })
         
     } catch (err) {
+        
         res.status(500).json({
             message: "Error logging in captain"
         })
@@ -103,7 +107,7 @@ export const getCaptainProfile = async (req, res) => {
     try {
 
         res.status(200).json({ captain: req.captain })
-        
+       
     } catch (err) {
         res.status(500).json({
             message: "Error getting captain profile"

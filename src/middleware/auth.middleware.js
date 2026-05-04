@@ -1,10 +1,19 @@
 import { User }  from "../models/user.model.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import cookieParser from "cookie-parser";
+
 
 export const authMiddleware = async (req, res, next) => {
     try {
-        const token =  req.cookies.token 
+        let token;
+        if (req.headers.authorization) {
+            token = req.headers.authorization.split(" ")[1];
+        } 
+        // fallback to cookie
+        else if (req.cookies.token) {
+            token = req.cookies.token;
+        } 
      
         if(!token) return res.status(401).json({ message: "Unauthorized" })
             
@@ -27,8 +36,14 @@ export const authMiddleware = async (req, res, next) => {
 
 export const authMiddlewareCaptain = async (req, res, next) => {
     try {
-
-        const token = req.cookies.token
+        let token;
+        if (req.headers.authorization) {
+            token = req.headers.authorization.split(" ")[1];
+        } 
+        // fallback to cookie
+        else if (req.cookies.token) {
+            token = req.cookies.token;
+        }
 
         if(!token) return res.status(401).json({ message: "Unauthorized" })
 
