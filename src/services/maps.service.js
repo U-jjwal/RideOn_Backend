@@ -72,6 +72,6 @@ export const getAutoCompleteSuggestions = async (input) => {
     } catch (err) {
         console.error(err);
         throw err;
-    }
+    } 
     
 }

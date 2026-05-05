@@ -15,9 +15,11 @@ app.get('/', (req, res) => {
 import userRouter from "./routers/user.routes.js";
 import captainRouter from "./routers/captain.routes.js";
 import mapsRoutes from "./routers/maps.routes.js"
+import rideRoutes from "./routers/ride.routes.js"
 
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/captain", captainRouter)
 app.use('/api/v1/maps', mapsRoutes)
+app.use('/api/v1/rides', rideRoutes)
 
 export default app;
