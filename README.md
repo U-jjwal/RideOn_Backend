@@ -1,301 +1,64 @@
-# 🚖 RideOn Backend API
+# RideOn — Backend
 
-A scalable and secure backend API for a ride-booking platform, built with **Node.js, Express.js, MongoDB, and JWT Authentication**.  
-This project supports two main roles:
+Lightweight backend for the RideOn app (Node.js, Express, MongoDB, Socket.IO).
 
-- **Users (Passengers)** – Register, login, manage profile
-- **Captains (Drivers)** – Register with vehicle details, login, manage profile
+## Quick summary
+- Purpose: ride booking, captain discovery, real-time notifications.
+- Stack: Node 18+, Express 5, Mongoose, Socket.IO, JWT authentication.
+- Main server entry: [`server.js`](Backend/server.js) — uses [`initializeSocket`](Backend/socket.js).
 
-Designed with modular architecture for easy scaling into a complete Uber/Ola-style ride-sharing system.
+## Setup (local)
+1. Copy env:
+   - Edit `/Backend/.env` (see keys used: `PORT`, `MONGO_URI`, `JWT_SECRET`, `GOOGLE_MAPS_API`).
+2. Install & run:
+   ```sh
+   cd Backend
+   npm install
+   npm run start
+   ```
+3. Server runs at PORT in `.env`. App mounts routes in [`src/app.js`](Backend/src/app.js).
 
----
+## Important scripts / files
+- Server bootstrap: [`server.js`](Backend/server.js)  
+- Socket initialization & helper: [`socket.js`](Backend/socket.js) — exports [`initializeSocket`](Backend/socket.js) and [`sendMessageToSocketId`](Backend/socket.js).
+- DB connector: [`src/db/db.js`](Backend/src/db/db.js)
+- Auth controllers: [`src/controllers/auth.controller.js`](Backend/src/controllers/auth.controller.js)
+- Captain controllers: [`src/controllers/captain.controller.js`](Backend/src/controllers/captain.controller.js)
+- Ride controllers: [`src/controllers/ride.controller.js`](Backend/src/controllers/ride.controller.js) — uses service functions in [`src/services/ride.service.js`](Backend/src/services/ride.service.js) (`createRide`, `confirmRide`, `startRide`, `endRide`).
+- Maps / Google APIs: [`src/services/maps.service.js`](Backend/src/services/maps.service.js) (`getAddressCoordinate`, `getDistancetime`, `getAutoCompleteSuggestions`, `getCaptainsInTheRadius`).
 
-# 📌 Project Overview
+## API overview (important endpoints)
+- User
+  - POST /api/v1/user/register — [`registerUser`](Backend/src/controllers/auth.controller.js)
+  - POST /api/v1/user/login — [`loginUser`](Backend/src/controllers/auth.controller.js)
+  - GET /api/v1/user/profile — [`userProfile`](Backend/src/controllers/auth.controller.js)
+- Captain
+  - POST /api/v1/captain/register — [`registerCaptain`](Backend/src/controllers/captain.controller.js)
+  - POST /api/v1/captain/login — [`loginCaptain`](Backend/src/controllers/captain.controller.js)
+  - GET /api/v1/captain/profile — [`getCaptainProfile`](Backend/src/controllers/captain.controller.js)
+- Rides
+  - POST /api/v1/rides/create — [`createride`](Backend/src/controllers/ride.controller.js)
+  - GET /api/v1/rides/get-fare — [`getFare`](Backend/src/controllers/ride.controller.js)
+  - POST /api/v1/rides/confirm — [`confirmride`](Backend/src/controllers/ride.controller.js)
+  - GET /api/v1/rides/start-ride — [`startRide`](Backend/src/controllers/ride.controller.js)
+  - POST /api/v1/rides/end-ride — [`endRide`](Backend/src/controllers/ride.controller.js)
 
-RideOn Backend provides authentication and profile management APIs for:
+## Socket / realtime flow
+- Client connects to server Socket.IO (configured in [`socket.js`](Backend/socket.js)).
+- Client should emit `join` with { userId, userType } — server updates `socketId` on DB models [`User`](Backend/src/models/user.model.js) or [`Captain`](Backend/src/models/captain.model.js).
+- When a ride is created, backend finds nearby captains via [`getCaptainsInTheRadius`](Backend/src/services/maps.service.js) and uses [`sendMessageToSocketId`](Backend/socket.js) to notify captains.
+- When captain confirms, backend reads populated ride (`Ride` model) and uses [`sendMessageToSocketId`](Backend/socket.js) to notify the user.
 
-### 👤 Users
-- Register account
-- Login securely
-- Logout
-- View profile
+## Models
+- User: [`Backend/src/models/user.model.js`](Backend/src/models/user.model.js) (includes `socketId`)
+- Captain: [`Backend/src/models/captain.model.js`](Backend/src/models/captain.model.js) (includes `socketId`, `vehicle`, `location`)
+- Ride: [`Backend/src/models/ride.model.js`](Backend/src/models/ride.model.js)
 
-### 🚘 Captains
-- Register with vehicle info
-- Login securely
-- Logout
-- View captain profile
+## Common troubleshooting
+- Missing user `socketId`: ensure client emits `join` after authentication and socket connect; server logs appear in [`socket.js`](Backend/socket.js).
+- 500 on `/rides/confirm`: check that [`src/services/ride.service.js`](Backend/src/services/ride.service.js) returns populated ride and that controller checks `ride.user.socketId` before sending socket message.
+- Google Maps: ensure `GOOGLE_MAPS_API` exists in backend `.env` for services in [`src/services/maps.service.js`](Backend/src/services/maps.service.js).
 
----
-
-# 🏗️ Project Architecture
-
-```bash
-RideOn-Backend/
-│
-├── src/
-│   ├── controllers/
-│   │   ├── auth.controller.js
-│   │   └── captain.controller.js
-│   │
-│   ├── middleware/
-│   │   └── auth.middleware.js
-│   │
-│   ├── models/
-│   │   ├── user.model.js
-│   │   └── captain.model.js
-│   │
-│   ├── routers/
-│   │   ├── user.routes.js
-│   │   └── captain.routes.js
-│   │
-│   ├── db/
-│   │   └── db.js
-│   │
-│   └── app.js
-│
-├── server.js
-├── .env
-├── package.json
-└── README.md
-⚙️ Tech Stack
-Technology	Purpose
-Node.js	Runtime environment
-Express.js	Web framework
-MongoDB	Database
-Mongoose	ODM
-JWT	Authentication
-bcrypt	Password hashing
-cookie-parser	Cookie management
-dotenv	Environment config
-🔐 Authentication System
-
-Authentication is implemented using:
-
-JWT Token Based Login
-JWT token generated on successful login/register
-Token stored in HTTP cookies
-Password Security
-
-Passwords are encrypted using bcrypt before storage.
-
-Example from auth flow:
-Passwords are hashed before saving users and captains into MongoDB.
-
-🧩 Core Modules Explanation
-1. User Module
-Features:
-
-✅ Register User
-✅ Login User
-✅ Logout User
-✅ Get User Profile
-
-API Routes:
-Method	Endpoint	Description
-POST	/api/v1/user/register	Register new user
-POST	/api/v1/user/login	Login user
-POST	/api/v1/user/logout	Logout user
-GET	/api/v1/user/profile	Get user profile
-
-Defined in routing layer here:
-
-2. Captain Module
-Features:
-
-✅ Register Captain
-✅ Login Captain
-✅ Logout Captain
-✅ Get Captain Profile
-
-API Routes:
-Method	Endpoint	Description
-POST	/api/v1/captain/register	Register captain
-POST	/api/v1/captain/login	Login captain
-POST	/api/v1/captain/logout	Logout captain
-GET	/api/v1/captain/profile	Get captain profile
-
-Defined here:
-
-🗄️ Database Models
-User Schema
-
-Includes:
-
-firstname
-lastname
-email
-password
-socketId
-
-User schema structure defined in:
-
-Captain Schema
-
-Includes:
-
-firstname
-lastname
-email
-password
-vehicle info:
-color
-plate
-capacity
-vehicleType
-status
-live location
-
-Captain schema defined in:
-
-🚘 Vehicle System
-
-Each captain must provide:
-
-{
-  "color": "White",
-  "plate": "MP04AB1234",
-  "capacity": 4,
-  "vehicleType": "car"
-}
-
-Supported vehicle types:
-
-car
-motorcycle
-auto
-🛡️ Middleware Protection
-
-Protected routes use authentication middleware:
-
-User Middleware:
-Verifies JWT token
-Fetches authenticated user
-Captain Middleware:
-Verifies JWT token
-Checks captain role
-
-Implemented in:
-
-🌐 API Flow Example
-User Registration Flow
-Client Request
-   ↓
-Route Handler
-   ↓
-Controller Validation
-   ↓
-Hash Password
-   ↓
-Save User to DB
-   ↓
-Generate JWT
-   ↓
-Send Cookie + Response
-Captain Login Flow
-Captain Login Request
-   ↓
-Validate Credentials
-   ↓
-Compare Password Hash
-   ↓
-Generate JWT Token
-   ↓
-Store Cookie
-   ↓
-Return Success Response
-
-Captain login logic handled in:
-
-🔌 Database Connection
-
-MongoDB connection uses mongoose:
-
-mongoose.connect(process.env.MONGO_URI)
-
-Database connector file:
-
-🚀 Server Startup
-
-Application boot sequence:
-
-Load environment variables
-Connect MongoDB
-Start Express server
-
-Server bootstrap file:
-
-🌍 Main Application Entry
-
-Express app configuration includes:
-
-JSON parser
-URL encoded parser
-Cookie parser
-Route mounting
-
-App setup defined in:
-
-🔑 Environment Variables
-
-Create .env file:
-
-PORT=5000
-MONGO_URI=mongodb://localhost:27017/RideOn
-JWT_SECRET=your_secret_key
-📦 Installation Guide
-1 Clone Repository
-git clone https://github.com/yourusername/RideOn-backend.git
-cd RideOn-backend
-2 Install Dependencies
-npm install
-3 Configure Environment
-
-Create .env
-
-4 Start Server
-npm run dev
-🧪 Sample API Testing
-Register User
-POST /api/v1/user/register
-{
-  "firstname": "John",
-  "lastname": "Doe",
-  "email": "john@example.com",
-  "password": "123456"
-}
-Register Captain
-POST /api/v1/captain/register
-{
-  "firstname": "Mike",
-  "lastname": "Smith",
-  "email": "mike@example.com",
-  "password": "123456",
-  "vehicle": {
-    "color": "Black",
-    "plate": "MP09XY4567",
-    "capacity": 4,
-    "vehicleType": "car"
-  }
-}
-🔮 Future Enhancements
-Planned Features:
-Ride booking system
-Real-time captain tracking
-Socket.IO live communication
-Fare estimation engine
-Payment gateway integration
-Trip history
-OTP verification
-Admin dashboard
-📈 Scalability Design
-
-This backend is built modularly for future expansion:
-
-Easy microservice migration
-Real-time websocket integration ready
-Scalable route separation
-Role-based authentication ready
-👨‍💻 Author
-
-Developed as a scalable ride-booking backend architecture project.
+## Notes
+- Authentication middleware: [`src/middleware/auth.middleware.js`](Backend/src/middleware/auth.middleware.js).
+- The backend is intentionally modular — add tests and improve error handling for production.
