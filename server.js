@@ -9,11 +9,12 @@ dotenv.config();
 const server = http.createServer(app);
 initializeSocket(server);
 
-connectDb()
-.then(() => {
+
+try {
     server.listen(process.env.PORT, () => {
     console.log(`Server is running on port ${process.env.PORT}`);
-})
-}).catch((err) => {
+}) 
+ }catch(err) {
     console.log("Error connecting to database: ", err);
-});
+
+}
