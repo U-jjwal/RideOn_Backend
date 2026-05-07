@@ -1,6 +1,6 @@
 import {Ride} from '../models/ride.model.js'
 import { getDistancetime } from './maps.service.js'
-import crypto from 'crypto'
+
 
 export async function getFare(pickup, destination) {
     if(!pickup || ! destination) {
@@ -40,14 +40,11 @@ export async function getFare(pickup, destination) {
 }
 
 function getOtp(num) {
+    const otp = Math.floor(
+        Math.random() * (Math.pow(10, num) - Math.pow(10, num - 1))
+    ) + Math.pow(10, num - 1);
 
-    function generateOtp(num) {
-        const otp = crypto.randomInt(Math.pow(10, num - 1), Math.pow(10, num)).toString();
-        return otp;
-    }
-
-    return generateOtp(num);
-    
+    return otp.toString();
 }
 
 
