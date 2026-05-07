@@ -1,4 +1,5 @@
 import { User }  from "../models/user.model.js";
+import { Captain } from "../models/captain.model.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import cookieParser from "cookie-parser";
@@ -52,7 +53,10 @@ export const authMiddlewareCaptain = async (req, res, next) => {
 
         if(decoded.role != "captain") return res.status(401).json({ message: "Unauthorized" })
 
-        req.captain = decoded
+        const captain = await Captain.findById(decoded.id)
+        if(!captain) return res.status(401).json({ message: "Unauthorized" })
+
+        req.captain = captain
         
         next()
 
